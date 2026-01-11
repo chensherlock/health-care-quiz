@@ -367,8 +367,11 @@ class QuizApp {
             img.alt = '題目圖片';
             img.style.maxWidth = '100%';
             img.style.marginTop = '1rem';
+            img.style.marginBottom = '1rem';
             img.style.borderRadius = '8px';
-            this.questionText.parentElement.appendChild(img);
+
+            // Insert image before options container so it appears above the "Show Answer" button
+            this.optionsContainer.parentNode.insertBefore(img, this.optionsContainer);
         }
 
         // Render options
