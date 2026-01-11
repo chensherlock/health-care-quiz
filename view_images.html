@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖片預覽工具</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .image-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .image-card img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .image-name {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>圖片預覽工具</h1>
+    <p>請協助確認每張圖片的內容，以便將圖片與正確的題目配對。</p>
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+        // Generate list of images from 1 to 50 (trying common range)
+        const gallery = document.getElementById('gallery');
+
+        // List of all png files we know exist
+        const imageFiles = [
+            'image1.png', 'image2.png', 'image3.png', 'image4.png', 'image5.png',
+            'image6.png', 'image7.png', 'image8.png', 'image9.png', 'image10.png',
+            'image11.png', 'image12.png', 'image13.png', 'image14.png', 'image15.png',
+            'image16.png', 'image17.png', 'image18.png', 'image19.png', 'image20.png',
+            'image21.png', 'image22.png', 'image23.png', 'image24.png', 'image25.png',
+            'image26.png', 'image27.png', 'image28.png'
+        ];
+
+        imageFiles.forEach(file => {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+
+            const img = document.createElement('img');
+            img.src = 'images/' + file;
+            img.loading = 'lazy';
+            img.onerror = function () { this.parentElement.style.display = 'none'; }; // Hide if not found
+
+            const name = document.createElement('div');
+            name.className = 'image-name';
+            name.textContent = file;
+
+            card.appendChild(img);
+            card.appendChild(name);
+            gallery.appendChild(card);
+        });
+    </script>
+</body>
+
+</html>

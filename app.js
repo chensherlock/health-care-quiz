@@ -56,6 +56,7 @@ class QuizApp {
         this.btnStartTF = document.getElementById('btn-start-tf');
         this.btnStartMC = document.getElementById('btn-start-mc');
         this.btnStartEssay = document.getElementById('btn-start-essay');
+        this.btnStartImage = document.getElementById('btn-start-image');
         this.countButtons = document.querySelectorAll('.count-btn');
         this.chapterCheckboxes = document.getElementById('chapter-checkboxes');
         this.tfCountEl = document.getElementById('tf-count');
@@ -99,6 +100,9 @@ class QuizApp {
         this.btnStartMC.addEventListener('click', () => this.startQuiz('mc'));
         if (this.btnStartEssay) {
             this.btnStartEssay.addEventListener('click', () => this.startQuiz('essay'));
+        }
+        if (this.btnStartImage) {
+            this.btnStartImage.addEventListener('click', () => this.startQuiz('image'));
         }
 
         // Count selection buttons
@@ -280,6 +284,12 @@ class QuizApp {
             case 'essay':
                 this.questions = [...essayQuestions];
                 break;
+            case 'image':
+                // Use dedicated imageQuestions array
+                let imageQuestions = (quizData.imageQuestions || [])
+                    .filter(q => chapterIds.includes(q.chapterId));
+                this.questions = [...imageQuestions];
+                break;
             default:
                 this.questions = [...tfQuestions, ...mcQuestions];
         }
@@ -336,7 +346,30 @@ class QuizApp {
         const typeNames = { 'tf': '是非題', 'mc': '選擇題', 'essay': '問答題' };
         this.questionType.textContent = typeNames[question.type] || '題目';
         this.questionSource.textContent = `出處：${question.source}`;
-        this.questionText.textContent = question.question;
+
+        // Use innerHTML to support embedded images/formatting in question text
+        // Replace newlines with <br> if it's plain text, or just use as is
+        if (question.question.includes('<')) {
+            this.questionText.innerHTML = question.question;
+        } else {
+            this.questionText.innerHTML = question.question.replace(/\n/g, '<br>');
+        }
+
+        // Display image if question has one (legacy/single image support)
+        let existingImg = this.questionText.parentElement.querySelector('.question-image');
+        if (existingImg) {
+            existingImg.remove();
+        }
+        if (question.image) {
+            const img = document.createElement('img');
+            img.src = question.image;
+            img.className = 'question-image';
+            img.alt = '題目圖片';
+            img.style.maxWidth = '100%';
+            img.style.marginTop = '1rem';
+            img.style.borderRadius = '8px';
+            this.questionText.parentElement.appendChild(img);
+        }
 
         // Render options
         this.renderOptions(question);
@@ -399,7 +432,14 @@ class QuizApp {
             // Show the answer
             const answerBox = document.createElement('div');
             answerBox.className = 'essay-answer-box';
-            answerBox.innerHTML = `<strong>參考答案：</strong><br>${(question.originalAnswer || question.answer).replace(/\n/g, '<br>')}`;
+
+            let answerContent = `<strong>參考答案：</strong><br>${(question.originalAnswer || question.answer).replace(/\n/g, '<br>')}`;
+
+            if (question.answerImage) {
+                answerContent += `<div class="answer-image-container"><img src="${question.answerImage}" alt="參考答案圖片" style="max-width: 100%; margin-top: 10px; border-radius: 4px;"></div>`;
+            }
+
+            answerBox.innerHTML = answerContent;
             container.appendChild(answerBox);
 
             // Show self-grading buttons if not yet graded
