@@ -2,6 +2,24 @@
 // 健康與護理Ⅰ 線上測驗系統 - 應用程式邏輯
 // ========================================
 
+// Cookie helper functions
+function setCookie(name, value, days = 14) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))}; expires=${expires}; path=/`;
+}
+
+function getCookie(name) {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+    if (cookie) {
+        try {
+            return JSON.parse(decodeURIComponent(cookie.split('=')[1]));
+        } catch {
+            return null;
+        }
+    }
+    return null;
+}
+
 class QuizApp {
     constructor() {
         this.questions = [];
@@ -10,9 +28,9 @@ class QuizApp {
         this.score = 0;
         this.mode = 'all';
         this.shuffleEnabled = true;
-        this.immediateFeedback = false;
-        this.selectedCount = 'all'; // 'all', 5, 10, 15, 20
-        this.selectedChapter = null; // Current selected chapter ID
+        this.immediateFeedback = true;
+        this.selectedCount = 'all'; // 'all', 5, 10, 20, 30, 50
+        this.selectedChapters = []; // Array of selected chapter IDs
 
         this.init();
     }
@@ -22,6 +40,7 @@ class QuizApp {
         this.bindEvents();
         this.addSVGGradient();
         this.populateChapters();
+        this.loadPreferences();
     }
 
     cacheDOM() {
@@ -38,7 +57,7 @@ class QuizApp {
         this.btnStartMC = document.getElementById('btn-start-mc');
         this.btnStartEssay = document.getElementById('btn-start-essay');
         this.countButtons = document.querySelectorAll('.count-btn');
-        this.chapterSelect = document.getElementById('chapter-select');
+        this.chapterCheckboxes = document.getElementById('chapter-checkboxes');
         this.tfCountEl = document.getElementById('tf-count');
         this.mcCountEl = document.getElementById('mc-count');
         this.essayCountEl = document.getElementById('essay-count');
@@ -87,8 +106,12 @@ class QuizApp {
             btn.addEventListener('click', () => this.selectCount(btn));
         });
 
+        // Preference checkboxes
+        this.shuffleCheckbox.addEventListener('change', () => this.savePreferences());
+        this.feedbackCheckbox.addEventListener('change', () => this.savePreferences());
+
         // Chapter selection
-        this.chapterSelect.addEventListener('change', () => this.onChapterChange());
+        // Chapter checkbox events are bound in populateChapters
 
         // Navigation buttons
         this.btnHome.addEventListener('click', () => this.retryQuiz());
@@ -117,34 +140,97 @@ class QuizApp {
     }
 
     populateChapters() {
-        // Populate chapter dropdown
-        this.chapterSelect.innerHTML = '';
+        // Populate chapter checkboxes
+        this.chapterCheckboxes.innerHTML = '';
 
         quizData.chapters.forEach((chapter, index) => {
-            const option = document.createElement('option');
-            option.value = chapter.id;
-            option.textContent = chapter.shortName;
-            this.chapterSelect.appendChild(option);
+            const label = document.createElement('label');
+            label.className = 'chapter-checkbox-label';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = chapter.id;
+            checkbox.checked = true; // All chapters selected by default
+            checkbox.addEventListener('change', () => this.onChapterChange());
+
+            const checkmark = document.createElement('span');
+            checkmark.className = 'checkmark';
+
+            const text = document.createTextNode(chapter.shortName);
+
+            label.appendChild(checkbox);
+            label.appendChild(checkmark);
+            label.appendChild(text);
+            this.chapterCheckboxes.appendChild(label);
         });
 
-        // Select first chapter by default
-        if (quizData.chapters.length > 0) {
-            this.selectedChapter = quizData.chapters[0].id;
-            this.updateQuestionCounts();
-        }
-    }
-
-    onChapterChange() {
-        this.selectedChapter = this.chapterSelect.value;
+        // Select all chapters by default
+        this.selectedChapters = quizData.chapters.map(c => c.id);
         this.updateQuestionCounts();
     }
 
+    onChapterChange() {
+        const checkboxes = this.chapterCheckboxes.querySelectorAll('input[type="checkbox"]');
+        this.selectedChapters = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        this.updateQuestionCounts();
+        this.savePreferences();
+    }
+
+    loadPreferences() {
+        const prefs = getCookie('quizPreferences');
+        if (prefs) {
+            // Load shuffle preference
+            if (typeof prefs.shuffle === 'boolean') {
+                this.shuffleCheckbox.checked = prefs.shuffle;
+            }
+
+            // Load immediate feedback preference
+            if (typeof prefs.immediateFeedback === 'boolean') {
+                this.feedbackCheckbox.checked = prefs.immediateFeedback;
+            }
+
+            // Load selected count preference
+            if (prefs.selectedCount !== undefined) {
+                this.selectedCount = prefs.selectedCount;
+                this.countButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    const btnCount = btn.dataset.count === 'all' ? 'all' : parseInt(btn.dataset.count);
+                    if (btnCount === prefs.selectedCount) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            // Load selected chapters preference
+            if (Array.isArray(prefs.selectedChapters) && prefs.selectedChapters.length > 0) {
+                this.selectedChapters = prefs.selectedChapters;
+                const checkboxes = this.chapterCheckboxes.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    cb.checked = prefs.selectedChapters.includes(cb.value);
+                });
+                this.updateQuestionCounts();
+            }
+        }
+    }
+
+    savePreferences() {
+        const prefs = {
+            shuffle: this.shuffleCheckbox.checked,
+            immediateFeedback: this.feedbackCheckbox.checked,
+            selectedCount: this.selectedCount,
+            selectedChapters: this.selectedChapters
+        };
+        setCookie('quizPreferences', prefs);
+    }
+
     updateQuestionCounts() {
-        // Filter by selected chapter
-        const chapterId = this.selectedChapter;
-        const tfCount = quizData.trueFalseQuestions.filter(q => q.chapterId === chapterId).length;
-        const mcCount = quizData.multipleChoiceQuestions.filter(q => q.chapterId === chapterId).length;
-        const essayCount = quizData.essayQuestions ? quizData.essayQuestions.filter(q => q.chapterId === chapterId).length : 0;
+        // Filter by selected chapters (multi-select)
+        const chapterIds = this.selectedChapters;
+        const tfCount = quizData.trueFalseQuestions.filter(q => chapterIds.includes(q.chapterId)).length;
+        const mcCount = quizData.multipleChoiceQuestions.filter(q => chapterIds.includes(q.chapterId)).length;
+        const essayCount = quizData.essayQuestions ? quizData.essayQuestions.filter(q => chapterIds.includes(q.chapterId)).length : 0;
 
         this.tfCountEl.textContent = tfCount;
         this.mcCountEl.textContent = mcCount;
@@ -170,18 +256,18 @@ class QuizApp {
     }
 
     prepareQuestions() {
-        const chapterId = this.selectedChapter;
+        const chapterIds = this.selectedChapters;
 
         let tfQuestions = quizData.trueFalseQuestions
-            .filter(q => q.chapterId === chapterId)
+            .filter(q => chapterIds.includes(q.chapterId))
             .map(q => ({ ...q, type: 'tf' }));
 
         let mcQuestions = quizData.multipleChoiceQuestions
-            .filter(q => q.chapterId === chapterId)
+            .filter(q => chapterIds.includes(q.chapterId))
             .map(q => ({ ...q, type: 'mc' }));
 
         let essayQuestions = (quizData.essayQuestions || [])
-            .filter(q => q.chapterId === chapterId)
+            .filter(q => chapterIds.includes(q.chapterId))
             .map(q => ({ ...q, type: 'essay' }));
 
         switch (this.mode) {
@@ -220,6 +306,7 @@ class QuizApp {
         // Set selected count
         const countValue = btn.dataset.count;
         this.selectedCount = countValue === 'all' ? 'all' : parseInt(countValue);
+        this.savePreferences();
     }
 
     shuffleArray(array) {
@@ -360,6 +447,26 @@ class QuizApp {
         }
         this.renderOptions(question);
         this.updateNavButtons();
+
+        // Auto-advance to next question after delay (same as regular questions)
+        // Only if immediate feedback is enabled
+        if (this.immediateFeedback) {
+            const delay = isCorrect ? 1000 : 3000;
+            const isLastQuestion = this.currentQuestionIndex === this.questions.length - 1;
+
+            // Clear any existing timer
+            if (this.autoAdvanceTimer) {
+                clearTimeout(this.autoAdvanceTimer);
+            }
+
+            this.autoAdvanceTimer = setTimeout(() => {
+                if (isLastQuestion) {
+                    this.submitQuiz();
+                } else {
+                    this.navigateQuestion(1);
+                }
+            }, delay);
+        }
     }
 
     createOptionElement(letter, text, value, question, isTF) {
@@ -450,6 +557,24 @@ class QuizApp {
         options.forEach(opt => {
             opt.classList.add('disabled');
         });
+
+        // Auto-advance to next question after delay
+        // 1 second for correct answers, 3 seconds for wrong answers
+        const delay = isCorrect ? 1000 : 3000;
+        const isLastQuestion = this.currentQuestionIndex === this.questions.length - 1;
+
+        // Clear any existing timer
+        if (this.autoAdvanceTimer) {
+            clearTimeout(this.autoAdvanceTimer);
+        }
+
+        this.autoAdvanceTimer = setTimeout(() => {
+            if (isLastQuestion) {
+                this.submitQuiz();
+            } else {
+                this.navigateQuestion(1);
+            }
+        }, delay);
     }
 
     hideFeedback() {

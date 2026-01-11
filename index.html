@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%234f46e5'/><text x='50' y='68' font-size='55' font-weight='bold' font-family='Arial' fill='white' text-anchor='middle'>H</text></svg>">
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -25,30 +27,22 @@
     <!-- Start Screen -->
     <main id="start-screen" class="screen active">
       <div class="start-card">
-        <div class="start-icon">📚</div>
-
         <!-- 章節選擇 -->
         <div class="chapter-selector">
           <label class="chapter-label">選擇章節：</label>
-          <div class="chapter-dropdown-wrapper">
-            <select id="chapter-select" class="chapter-dropdown">
-              <!-- 選項由 JavaScript 動態產生 -->
-            </select>
-            <span class="dropdown-arrow">▼</span>
+          <div class="chapter-checkboxes" id="chapter-checkboxes">
+            <!-- 選項由 JavaScript 動態產生 -->
           </div>
         </div>
 
         <div class="quiz-info">
           <div class="info-item">
-            <span class="info-icon">✓✗</span>
             <span class="info-text">是非題：<strong id="tf-count">18</strong> 題</span>
           </div>
           <div class="info-item">
-            <span class="info-icon">ABCD</span>
             <span class="info-text">選擇題：<strong id="mc-count">25</strong> 題</span>
           </div>
           <div class="info-item">
-            <span class="info-icon">📝</span>
             <span class="info-text">問答題：<strong id="essay-count">0</strong> 題</span>
           </div>
         </div>
@@ -60,7 +54,7 @@
             隨機排列題目順序
           </label>
           <label class="option-label">
-            <input type="checkbox" id="show-immediate-feedback">
+            <input type="checkbox" id="show-immediate-feedback" checked>
             <span class="checkmark"></span>
             即時顯示答案解析
           </label>
@@ -71,8 +65,9 @@
           <div class="count-options" id="count-options">
             <button class="count-btn" data-count="5">5 題</button>
             <button class="count-btn" data-count="10">10 題</button>
-            <button class="count-btn" data-count="15">15 題</button>
             <button class="count-btn" data-count="20">20 題</button>
+            <button class="count-btn" data-count="30">30 題</button>
+            <button class="count-btn" data-count="50">50 題</button>
             <button class="count-btn active" data-count="all">全部</button>
           </div>
         </div>
@@ -81,22 +76,18 @@
           <button class="mode-btn" data-mode="all" id="btn-start-all">
             <span class="mode-icon">📝</span>
             <span class="mode-title">完整測驗</span>
-            <span class="mode-desc">作答所有 43 題</span>
           </button>
           <button class="mode-btn" data-mode="tf" id="btn-start-tf">
             <span class="mode-icon">✓✗</span>
             <span class="mode-title">是非題</span>
-            <span class="mode-desc">僅作答 18 題是非題</span>
           </button>
           <button class="mode-btn" data-mode="mc" id="btn-start-mc">
             <span class="mode-icon">🔤</span>
             <span class="mode-title">選擇題</span>
-            <span class="mode-desc">僅作答選擇題</span>
           </button>
           <button class="mode-btn" data-mode="essay" id="btn-start-essay">
             <span class="mode-icon">📝</span>
             <span class="mode-title">問答題</span>
-            <span class="mode-desc">自評作答問答題</span>
           </button>
         </div>
       </div>

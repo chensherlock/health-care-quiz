@@ -1,0 +1,10 @@
+{
+    "name": "health-care-quiz",
+    "version": "1.0.0",
+    "description": "Health Care Quiz Application",
+    "scripts": {
+        "start": "npx live-server . --port=8080 --no-browser"
+    },
+    "keywords": [],
+    "license": "ISC"
+}
