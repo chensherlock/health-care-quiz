@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>健康與護理Ⅰ - 線上測驗</title>
+  <meta name="description" content="健康與護理Ⅰ線上測驗系統 - 第一章 愛自己好健康">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1 class="logo">健康與護理Ⅰ</h1>
+        <p class="subtitle">線上測驗系統</p>
+      </div>
+    </header>
+
+    <!-- Start Screen -->
+    <main id="start-screen" class="screen active">
+      <div class="start-card">
+        <div class="start-icon">📚</div>
+
+        <!-- 章節選擇 -->
+        <div class="chapter-selector">
+          <label class="chapter-label">選擇章節：</label>
+          <div class="chapter-dropdown-wrapper">
+            <select id="chapter-select" class="chapter-dropdown">
+              <!-- 選項由 JavaScript 動態產生 -->
+            </select>
+            <span class="dropdown-arrow">▼</span>
+          </div>
+        </div>
+
+        <div class="quiz-info">
+          <div class="info-item">
+            <span class="info-icon">✓✗</span>
+            <span class="info-text">是非題：<strong id="tf-count">18</strong> 題</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">ABCD</span>
+            <span class="info-text">選擇題：<strong id="mc-count">25</strong> 題</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📝</span>
+            <span class="info-text">問答題：<strong id="essay-count">0</strong> 題</span>
+          </div>
+        </div>
+
+        <div class="quiz-options">
+          <label class="option-label">
+            <input type="checkbox" id="shuffle-questions" checked>
+            <span class="checkmark"></span>
+            隨機排列題目順序
+          </label>
+          <label class="option-label">
+            <input type="checkbox" id="show-immediate-feedback">
+            <span class="checkmark"></span>
+            即時顯示答案解析
+          </label>
+        </div>
+
+        <div class="question-count-section">
+          <label class="count-label">選擇題目數量：</label>
+          <div class="count-options" id="count-options">
+            <button class="count-btn" data-count="5">5 題</button>
+            <button class="count-btn" data-count="10">10 題</button>
+            <button class="count-btn" data-count="15">15 題</button>
+            <button class="count-btn" data-count="20">20 題</button>
+            <button class="count-btn active" data-count="all">全部</button>
+          </div>
+        </div>
+
+        <div class="mode-selection">
+          <button class="mode-btn" data-mode="all" id="btn-start-all">
+            <span class="mode-icon">📝</span>
+            <span class="mode-title">完整測驗</span>
+            <span class="mode-desc">作答所有 43 題</span>
+          </button>
+          <button class="mode-btn" data-mode="tf" id="btn-start-tf">
+            <span class="mode-icon">✓✗</span>
+            <span class="mode-title">是非題</span>
+            <span class="mode-desc">僅作答 18 題是非題</span>
+          </button>
+          <button class="mode-btn" data-mode="mc" id="btn-start-mc">
+            <span class="mode-icon">🔤</span>
+            <span class="mode-title">選擇題</span>
+            <span class="mode-desc">僅作答選擇題</span>
+          </button>
+          <button class="mode-btn" data-mode="essay" id="btn-start-essay">
+            <span class="mode-icon">📝</span>
+            <span class="mode-title">問答題</span>
+            <span class="mode-desc">自評作答問答題</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Quiz Screen -->
+    <main id="quiz-screen" class="screen">
+      <div class="quiz-container">
+        <!-- Progress Bar -->
+        <div class="progress-section">
+          <div class="progress-info">
+            <span class="question-counter">第 <span id="current-question">1</span> 題，共 <span
+                id="total-questions">43</span> 題</span>
+            <span class="score-display" id="score-display"></span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-type" id="question-type">是非題</span>
+            <span class="question-source" id="question-source">P.11</span>
+          </div>
+          <p class="question-text" id="question-text"></p>
+
+          <!-- Answer Options -->
+          <div class="options-container" id="options-container"></div>
+
+          <!-- Feedback -->
+          <div class="feedback-section" id="feedback-section">
+            <div class="feedback-content" id="feedback-content"></div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+          <button class="nav-btn home" id="btn-home">
+            🏠 首頁
+          </button>
+          <div class="nav-center">
+            <button class="nav-btn prev" id="btn-prev" disabled>
+              ← 上一題
+            </button>
+            <button class="nav-btn next primary" id="btn-next">
+              下一題 →
+            </button>
+            <button class="nav-btn submit primary" id="btn-submit" style="display: none;">
+              提交測驗 ✓
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Result Screen -->
+    <main id="result-screen" class="screen">
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-icon" id="result-icon">🎉</div>
+          <h2>測驗完成！</h2>
+        </div>
+
+        <div class="score-circle">
+          <svg viewBox="0 0 100 100">
+            <circle class="score-bg" cx="50" cy="50" r="45" />
+            <circle class="score-fill" id="score-circle" cx="50" cy="50" r="45" />
+          </svg>
+          <div class="score-text">
+            <span class="score-value" id="score-percent">0</span>
+            <span class="score-unit">%</span>
+          </div>
+        </div>
+
+        <div class="result-stats">
+          <div class="stat-item correct">
+            <span class="stat-icon">✓</span>
+            <span class="stat-value" id="correct-count">0</span>
+            <span class="stat-label">答對</span>
+          </div>
+          <div class="stat-item wrong">
+            <span class="stat-icon">✗</span>
+            <span class="stat-value" id="wrong-count">0</span>
+            <span class="stat-label">答錯</span>
+          </div>
+          <div class="stat-item total">
+            <span class="stat-icon">📊</span>
+            <span class="stat-value" id="total-count">0</span>
+            <span class="stat-label">總題數</span>
+          </div>
+        </div>
+
+        <div class="result-message" id="result-message"></div>
+
+        <div class="result-buttons">
+          <button class="result-btn secondary" id="btn-review">
+            📋 檢視詳細答案
+          </button>
+          <button class="result-btn primary" id="btn-retry">
+            🔄 重新測驗
+          </button>
+        </div>
+      </div>
+
+      <!-- Review Section -->
+      <div class="review-section" id="review-section" style="display: none;">
+        <h3>答案檢視</h3>
+        <div class="review-list" id="review-list"></div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2026 健康與護理Ⅰ 線上測驗系統</p>
+    </footer>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
