@@ -37,13 +37,28 @@
 
         <div class="quiz-info">
           <div class="info-item">
-            <span class="info-text">是非題：<strong id="tf-count">18</strong> 題</span>
+            <label style="cursor: pointer; display: flex; align-items: center;">
+              <input type="checkbox" id="check-tf" checked style="margin-right: 8px; transform: scale(1.2);">
+              <span class="info-text">是非題：<strong id="tf-count">18</strong> 題</span>
+            </label>
           </div>
           <div class="info-item">
-            <span class="info-text">選擇題：<strong id="mc-count">25</strong> 題</span>
+            <label style="cursor: pointer; display: flex; align-items: center;">
+              <input type="checkbox" id="check-mc" checked style="margin-right: 8px; transform: scale(1.2);">
+              <span class="info-text">選擇題：<strong id="mc-count">25</strong> 題</span>
+            </label>
           </div>
           <div class="info-item">
-            <span class="info-text">問答題：<strong id="essay-count">0</strong> 題</span>
+            <label style="cursor: pointer; display: flex; align-items: center;">
+              <input type="checkbox" id="check-essay" checked style="margin-right: 8px; transform: scale(1.2);">
+              <span class="info-text">問答題：<strong id="essay-count">0</strong> 題</span>
+            </label>
+          </div>
+          <div class="info-item">
+            <label style="cursor: pointer; display: flex; align-items: center;">
+              <input type="checkbox" id="check-image" checked style="margin-right: 8px; transform: scale(1.2);">
+              <span class="info-text">圖片題：<strong id="image-count">0</strong> 題</span>
+            </label>
           </div>
         </div>
 
@@ -75,23 +90,7 @@
         <div class="mode-selection">
           <button class="mode-btn" data-mode="all" id="btn-start-all">
             <span class="mode-icon">📝</span>
-            <span class="mode-title">完整測驗</span>
-          </button>
-          <button class="mode-btn" data-mode="tf" id="btn-start-tf">
-            <span class="mode-icon">✓✗</span>
-            <span class="mode-title">是非題</span>
-          </button>
-          <button class="mode-btn" data-mode="mc" id="btn-start-mc">
-            <span class="mode-icon">🔤</span>
-            <span class="mode-title">選擇題</span>
-          </button>
-          <button class="mode-btn" data-mode="essay" id="btn-start-essay">
-            <span class="mode-icon">📝</span>
-            <span class="mode-title">問答題</span>
-          </button>
-          <button class="mode-btn" data-mode="image" id="btn-start-image">
-            <span class="mode-icon">🖼️</span>
-            <span class="mode-title">圖片題</span>
+            <span class="mode-title">開始測驗</span>
           </button>
         </div>
       </div>

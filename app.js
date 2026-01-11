@@ -62,6 +62,13 @@ class QuizApp {
         this.tfCountEl = document.getElementById('tf-count');
         this.mcCountEl = document.getElementById('mc-count');
         this.essayCountEl = document.getElementById('essay-count');
+        this.imageCountEl = document.getElementById('image-count');
+
+        // Type selection checkboxes
+        this.checkTf = document.getElementById('check-tf');
+        this.checkMc = document.getElementById('check-mc');
+        this.checkEssay = document.getElementById('check-essay');
+        this.checkImage = document.getElementById('check-image');
 
         // Quiz screen elements
         this.currentQuestionEl = document.getElementById('current-question');
@@ -95,9 +102,15 @@ class QuizApp {
 
     bindEvents() {
         // Start buttons
-        this.btnStartAll.addEventListener('click', () => this.startQuiz('all'));
-        this.btnStartTF.addEventListener('click', () => this.startQuiz('tf'));
-        this.btnStartMC.addEventListener('click', () => this.startQuiz('mc'));
+        if (this.btnStartAll) {
+            this.btnStartAll.addEventListener('click', () => this.startQuiz('all'));
+        }
+        if (this.btnStartTF) {
+            this.btnStartTF.addEventListener('click', () => this.startQuiz('tf'));
+        }
+        if (this.btnStartMC) {
+            this.btnStartMC.addEventListener('click', () => this.startQuiz('mc'));
+        }
         if (this.btnStartEssay) {
             this.btnStartEssay.addEventListener('click', () => this.startQuiz('essay'));
         }
@@ -113,6 +126,12 @@ class QuizApp {
         // Preference checkboxes
         this.shuffleCheckbox.addEventListener('change', () => this.savePreferences());
         this.feedbackCheckbox.addEventListener('change', () => this.savePreferences());
+
+        // Type selection checkboxes
+        if (this.checkTf) this.checkTf.addEventListener('change', () => this.savePreferences());
+        if (this.checkMc) this.checkMc.addEventListener('change', () => this.savePreferences());
+        if (this.checkEssay) this.checkEssay.addEventListener('change', () => this.savePreferences());
+        if (this.checkImage) this.checkImage.addEventListener('change', () => this.savePreferences());
 
         // Chapter selection
         // Chapter checkbox events are bound in populateChapters
@@ -216,15 +235,32 @@ class QuizApp {
                 });
                 this.updateQuestionCounts();
             }
+
+            // Load type selection preference
+            if (prefs.selectedTypes) {
+                if (this.checkTf) this.checkTf.checked = prefs.selectedTypes.tf !== false;
+                if (this.checkMc) this.checkMc.checked = prefs.selectedTypes.mc !== false;
+                if (this.checkEssay) this.checkEssay.checked = prefs.selectedTypes.essay !== false;
+                if (this.checkImage) this.checkImage.checked = prefs.selectedTypes.image !== false;
+            }
         }
     }
 
     savePreferences() {
+        // Collect type selection
+        const selectedTypes = {
+            tf: this.checkTf ? this.checkTf.checked : true,
+            mc: this.checkMc ? this.checkMc.checked : true,
+            essay: this.checkEssay ? this.checkEssay.checked : true,
+            image: this.checkImage ? this.checkImage.checked : true
+        };
+
         const prefs = {
             shuffle: this.shuffleCheckbox.checked,
             immediateFeedback: this.feedbackCheckbox.checked,
             selectedCount: this.selectedCount,
-            selectedChapters: this.selectedChapters
+            selectedChapters: this.selectedChapters,
+            selectedTypes: selectedTypes
         };
         setCookie('quizPreferences', prefs);
     }
@@ -240,6 +276,10 @@ class QuizApp {
         this.mcCountEl.textContent = mcCount;
         if (this.essayCountEl) {
             this.essayCountEl.textContent = essayCount;
+        }
+        if (this.imageCountEl) {
+            const imageCount = (quizData.imageQuestions || []).filter(q => chapterIds.includes(q.chapterId)).length;
+            this.imageCountEl.textContent = imageCount;
         }
     }
 
@@ -286,12 +326,33 @@ class QuizApp {
                 break;
             case 'image':
                 // Use dedicated imageQuestions array
-                let imageQuestions = (quizData.imageQuestions || [])
+                let imageQuestionsOnly = (quizData.imageQuestions || [])
                     .filter(q => chapterIds.includes(q.chapterId));
-                this.questions = [...imageQuestions];
+                this.questions = [...imageQuestionsOnly];
                 break;
             default:
-                this.questions = [...tfQuestions, ...mcQuestions];
+                // Include ALL types determined by checkboxes (custom complete quiz)
+                this.questions = [];
+
+                // Get checkbox states (default to true if elements missing)
+                const useTf = this.checkTf ? this.checkTf.checked : true;
+                const useMc = this.checkMc ? this.checkMc.checked : true;
+                const useEssay = this.checkEssay ? this.checkEssay.checked : true;
+                const useImage = this.checkImage ? this.checkImage.checked : true;
+
+                if (useTf) this.questions.push(...tfQuestions);
+                if (useMc) this.questions.push(...mcQuestions);
+                if (useEssay) this.questions.push(...essayQuestions);
+                if (useImage) {
+                    let allImageQuestions = (quizData.imageQuestions || [])
+                        .filter(q => chapterIds.includes(q.chapterId));
+                    this.questions.push(...allImageQuestions);
+                }
+
+                if (this.questions.length === 0) {
+                    alert('請至少選擇一種題型！');
+                    return;
+                }
         }
 
         if (this.shuffleEnabled) {
